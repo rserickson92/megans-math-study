@@ -1,4 +1,5 @@
 .vscode
-
 .jspsych-builder
+
 node_modules/
+packaged/
