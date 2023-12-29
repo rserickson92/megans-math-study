@@ -1,7 +1,7 @@
 /**
  * @title Megan's math study
  * @description Megan's math study
- * @version 0.1.0
+ * @version 0.1.1
  *
  * @assets assets/
  */
@@ -50,8 +50,11 @@ export async function run({ assetPaths, input = {}, environment, title, version 
 
   const test = {
     type: SurveyHtmlFormPlugin,
-    preamble: jsPsych.timelineVariable('equation'),
+    preamble: () => {
+      return `<p>${jsPsych.timelineVariable('equation')}</p>`;
+    },
     html: '<input name="answer" type="text" />',
+    css_classes: ['study-problem'],
     data: {
       task: 'test',
       correctResponse: jsPsych.timelineVariable('correctResponse')
@@ -65,22 +68,23 @@ export async function run({ assetPaths, input = {}, environment, title, version 
     type: ImageKeyboardResponsePlugin,
     choices: "ALL_KEYS",
     stimulus: '',
+    css_classes: ['study-feedback'],
     data: {
       task: 'feedback'
     },
     on_start: (trial) => {
       if (prevTrialData(jsPsych).isCorrect) {
         trial.stimulus = 'assets/correct.png';
-        trial.prompt = jsPsych.randomization.sampleWithoutReplacement([
+        trial.prompt = randomizedFeedbackMessage(jsPsych, [
           feedbackMessages.correctYou,
           feedbackMessages.correctNoYou
-        ], 1);
+        ]);
       } else {
         trial.stimulus = 'assets/incorrect.png';
-        trial.prompt = jsPsych.randomization.sampleWithoutReplacement([
+        trial.prompt = randomizedFeedbackMessage(jsPsych, [
           feedbackMessages.incorrectYou,
           feedbackMessages.incorrectNoYou
-        ], 1);
+        ]);
       }
     }
   }
@@ -100,4 +104,15 @@ export async function run({ assetPaths, input = {}, environment, title, version 
 
 function prevTrialData(jsPsych) {
   return jsPsych.data.get().last().values()[0];
+}
+
+function randomizedFeedbackMessage(jsPsych, choices) {
+  const message = jsPsych.randomization.sampleWithoutReplacement(choices, 1);
+  const correctEquation = jsPsych.timelineVariable('correctEquation');
+  return `
+    <div class="feedback-message">
+      <p>${message}</p>
+    </div>
+    <p class="correct-equation">${correctEquation}</p>
+  `;
 }
