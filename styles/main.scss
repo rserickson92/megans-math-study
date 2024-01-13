@@ -5,9 +5,16 @@
 }
 
 .study-problem {
-  .jspsych-survey-html-form-preamble {
-    font-size: 100px;
-  }
+  font-size: 100px;
+}
+
+#problem-answer-box {
+  font-size: 100px;
+  width: 15%;
+}
+
+.correct-response {
+  color: blue;
 }
 
 .study-feedback {

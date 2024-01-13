@@ -1,28 +1,35 @@
-const blank = '____';
+const answerBox = '<input id="problem-answer-box" name="answer" type="text" />';
 
 const testStimuli = [
   {
-    equation: `3 + ${blank} = 10`,
+    equation: `
+      ${equationSegment('3 + ')}
+      ${answerBox}
+      ${equationSegment('= 10')}
+    `,
     correctResponse: 7,
   },
-  {
-    equation: `2 + 2 = ${blank}`,
-    correctResponse: 4
-  },
-  {
-    equation: `${blank} + 12 = 15`,
-    correctResponse: 3
-  }
 ];
-testStimuli.forEach(stimuli => {
-  stimuli.correctEquation = stimuli.equation.replace(blank, stimuli.correctResponse);
+testStimuli.forEach((stimuli) => {
+  stimuli.correctEquation = stimuli.equation.replace(
+      answerBox,
+      formatCorrectResponse(stimuli.correctResponse),
+  );
 });
 
-const feedbackMessages = {
-    correctNoYou: "That's correct! The right answer was typed!",
-    correctYou: "That's correct! YOU typed the right answer!",
-    incorrectNoYou: "That's incorrect! The wrong answer was typed!",
-    incorrectYou: "That's incorrect! YOU typed the wrong answer!"
+function equationSegment(text) {
+  return `<span>${text}</span>`;
 }
 
-export { testStimuli, feedbackMessages };
+function formatCorrectResponse(answer) {
+  return `<span class="correct-response">${answer}</span>`;
+}
+
+const feedbackMessages = {
+  correctNoYou: 'That\'s correct! The right answer was typed!',
+  correctYou: 'That\'s correct! YOU typed the right answer!',
+  incorrectNoYou: 'That\'s incorrect! The wrong answer was typed!',
+  incorrectYou: 'That\'s incorrect! YOU typed the wrong answer!',
+};
+
+export {testStimuli, feedbackMessages};

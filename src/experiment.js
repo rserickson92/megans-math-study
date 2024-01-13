@@ -7,23 +7,23 @@
  */
 
 // You can import stylesheets (.scss or .css).
-import "../styles/main.scss";
+import '../styles/main.scss';
 
-import FullscreenPlugin from "@jspsych/plugin-fullscreen";
-import HtmlKeyboardResponsePlugin from "@jspsych/plugin-html-keyboard-response";
-import PreloadPlugin from "@jspsych/plugin-preload";
-import { initJsPsych } from "jspsych";
-import SurveyHtmlFormPlugin from "@jspsych/plugin-survey-html-form";
-import ImageKeyboardResponsePlugin from "@jspsych/plugin-image-keyboard-response";
+import FullscreenPlugin from '@jspsych/plugin-fullscreen';
+import HtmlKeyboardResponsePlugin from '@jspsych/plugin-html-keyboard-response';
+import PreloadPlugin from '@jspsych/plugin-preload';
+import {initJsPsych} from 'jspsych';
+import SurveyHtmlFormPlugin from '@jspsych/plugin-survey-html-form';
+import ImageKeyboardResponsePlugin from '@jspsych/plugin-image-keyboard-response';
 
-import { testStimuli, feedbackMessages } from "./test-data";
+import {testStimuli, feedbackMessages} from './test-data';
 
 /**
  * This function will be executed by jsPsych Builder and is expected to run the jsPsych experiment
  *
  * @type {import("jspsych-builder").RunFunction}
  */
-export async function run({ assetPaths, input = {}, environment, title, version }) {
+export async function run({assetPaths, input = {}, environment, title, version}) {
   const jsPsych = initJsPsych();
 
   const timeline = [];
@@ -39,7 +39,7 @@ export async function run({ assetPaths, input = {}, environment, title, version 
   // Welcome screen
   timeline.push({
     type: HtmlKeyboardResponsePlugin,
-    stimulus: "<p>Ready for our study? 2+2 is 4, minus 1 that's 3 quick maths</p>",
+    stimulus: '<p>Ready for our study?</p>',
   });
 
   // Switch to fullscreen
@@ -50,48 +50,48 @@ export async function run({ assetPaths, input = {}, environment, title, version 
 
   const test = {
     type: SurveyHtmlFormPlugin,
-    preamble: () => {
-      return `<p>${jsPsych.timelineVariable('equation')}</p>`;
+    html: () => {
+      return jsPsych.timelineVariable('equation');
     },
-    html: '<input name="answer" type="text" />',
+    button_label: '→',
     css_classes: ['study-problem'],
     data: {
       task: 'test',
-      correctResponse: jsPsych.timelineVariable('correctResponse')
+      correctResponse: jsPsych.timelineVariable('correctResponse'),
     },
     on_finish: (data) => {
       data.isCorrect = parseInt(data.response.answer) === data.correctResponse;
-    }
+    },
   };
 
   const feedback = {
     type: ImageKeyboardResponsePlugin,
-    choices: "ALL_KEYS",
+    choices: 'ALL_KEYS',
     stimulus: '',
     css_classes: ['study-feedback'],
     data: {
-      task: 'feedback'
+      task: 'feedback',
     },
     on_start: (trial) => {
       if (prevTrialData(jsPsych).isCorrect) {
         trial.stimulus = 'assets/correct.png';
         trial.prompt = randomizedFeedbackMessage(jsPsych, [
           feedbackMessages.correctYou,
-          feedbackMessages.correctNoYou
+          feedbackMessages.correctNoYou,
         ]);
       } else {
         trial.stimulus = 'assets/incorrect.png';
         trial.prompt = randomizedFeedbackMessage(jsPsych, [
           feedbackMessages.incorrectYou,
-          feedbackMessages.incorrectNoYou
+          feedbackMessages.incorrectNoYou,
         ]);
       }
-    }
-  }
+    },
+  };
 
   const testProcedure = {
     timeline: [test, feedback],
-    timeline_variables: testStimuli
+    timeline_variables: testStimuli,
   };
   timeline.push(testProcedure);
 
