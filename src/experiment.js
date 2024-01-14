@@ -14,7 +14,7 @@ import HtmlKeyboardResponsePlugin from '@jspsych/plugin-html-keyboard-response';
 import PreloadPlugin from '@jspsych/plugin-preload';
 import {initJsPsych} from 'jspsych';
 import SurveyHtmlFormPlugin from '@jspsych/plugin-survey-html-form';
-import ImageKeyboardResponsePlugin from '@jspsych/plugin-image-keyboard-response';
+import SurveyTextPlugin from '@jspsych/plugin-survey-text';
 
 import {testStimuli, feedbackMessages} from './test-data';
 
@@ -48,6 +48,21 @@ export async function run({assetPaths, input = {}, environment, title, version})
     fullscreen_mode: true,
   });
 
+  // Get participant name
+  timeline.push({
+    type: SurveyTextPlugin,
+    questions: [
+      {
+        prompt: 'What\'s your name?',
+        name: 'participantName',
+        required: true,
+      },
+    ],
+    on_finish: (data) => {
+      jsPsych.data.addProperties({participantName: data.response.participantName});
+    },
+  });
+
   const test = {
     type: SurveyHtmlFormPlugin,
     html: () => {
@@ -65,26 +80,35 @@ export async function run({assetPaths, input = {}, environment, title, version})
   };
 
   const feedback = {
-    type: ImageKeyboardResponsePlugin,
-    choices: 'ALL_KEYS',
-    stimulus: '',
+    type: SurveyHtmlFormPlugin,
     css_classes: ['study-feedback'],
     data: {
       task: 'feedback',
     },
     on_start: (trial) => {
+      const participantName = jsPsych.data.dataProperties.participantName;
       if (prevTrialData(jsPsych).isCorrect) {
-        trial.stimulus = 'assets/correct.png';
-        trial.prompt = randomizedFeedbackMessage(jsPsych, [
-          feedbackMessages.correctYou,
-          feedbackMessages.correctNoYou,
-        ]);
+        trial.html = `
+          <div class="feedback-images">
+            <img src="assets/correct.png" />
+            ${randomizedFeedbackMessage(jsPsych, [
+              feedbackMessages.correctYou(participantName),
+              feedbackMessages.correctNoYou,
+            ])}
+          </div>
+          ${feedbackAnswer(jsPsych)}
+        `;
       } else {
-        trial.stimulus = 'assets/incorrect.png';
-        trial.prompt = randomizedFeedbackMessage(jsPsych, [
-          feedbackMessages.incorrectYou,
-          feedbackMessages.incorrectNoYou,
-        ]);
+        trial.html = `
+          <div class="feedback-images">
+            <img src="assets/incorrect.png" />
+            ${randomizedFeedbackMessage(jsPsych, [
+              feedbackMessages.incorrectYou(participantName),
+              feedbackMessages.incorrectNoYou,
+            ])}
+          </div>
+          ${feedbackAnswer(jsPsych)}
+        `;
       }
     },
   };
@@ -108,11 +132,26 @@ function prevTrialData(jsPsych) {
 
 function randomizedFeedbackMessage(jsPsych, choices) {
   const message = jsPsych.randomization.sampleWithoutReplacement(choices, 1);
-  const correctEquation = jsPsych.timelineVariable('correctEquation');
+
+  // Workaround: inline style is needed here, presumably because
+  // assets are not available yet during CSS compilation
   return `
-    <div class="feedback-message">
+    <div class="feedback-message" style="background-image: url('assets/ribbon.png')">
       <p>${message}</p>
     </div>
-    <p class="correct-equation">${correctEquation}</p>
+  `;
+}
+
+function feedbackAnswer(jsPsych) {
+  const correctEquation = jsPsych.timelineVariable('correctEquation');
+  const correctResponse = jsPsych.timelineVariable('correctResponse');
+  return `
+    <div class="feedback-answer">
+      <strong>
+        The correct answer is
+        <span class="correct-response">${correctResponse}</span>
+      </strong>
+      <p class="correct-equation">${correctEquation}</p>
+    </div>
   `;
 }

@@ -18,25 +18,40 @@
 }
 
 .study-feedback {
-  display: flex;
   width: 100%;
-  height: 100%;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  align-items: center;
 
-  canvas {
-    height: 50%;
-  }
-
-  .feedback-message {
+  > form {
     display: flex;
-    justify-content: center;
-  }
+    flex-direction: column;
+    align-items: center;
 
-  .correct-equation {
-    width: 100%;
-    height: 50%;
-    font-size: 100px;
+    .feedback-images {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+    }
+
+    .feedback-answer {
+      width: 100%;
+      height: 50%;
+      margin-top: 10em;
+    }
+
+    .feedback-message {
+      display: flex;
+      align-items: center;
+      background-repeat: no-repeat;
+      background-position: center;
+      background-size: contain;
+      height: 15em;
+      max-width: 25%;
+    }
+
+    .correct-equation {
+      font-size: 100px;
+      margin-top: 2rem;
+      margin-bottom: 2rem;
+    }
   }
 }
