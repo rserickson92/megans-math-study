@@ -1,10 +1,14 @@
 /**
  * @title Megan's math study
  * @description Megan's math study
- * @version 0.1.1
+ * @version 0.2.0
  *
  * @assets assets/
  */
+
+/* eslint-disable require-jsdoc */
+/* eslint-disable valid-jsdoc */
+/* eslint-disable max-len */
 
 // You can import stylesheets (.scss or .css).
 import '../styles/main.scss';
@@ -92,9 +96,9 @@ export async function run({assetPaths, input = {}, environment, title, version})
           <div class="feedback-images">
             <img src="assets/correct.png" />
             ${randomizedFeedbackMessage(jsPsych, [
-              feedbackMessages.correctYou(participantName),
-              feedbackMessages.correctNoYou,
-            ])}
+    feedbackMessages.correctYou(participantName),
+    feedbackMessages.correctNoYou,
+  ])}
           </div>
           ${feedbackAnswer(jsPsych)}
         `;
@@ -103,9 +107,9 @@ export async function run({assetPaths, input = {}, environment, title, version})
           <div class="feedback-images">
             <img src="assets/incorrect.png" />
             ${randomizedFeedbackMessage(jsPsych, [
-              feedbackMessages.incorrectYou(participantName),
-              feedbackMessages.incorrectNoYou,
-            ])}
+    feedbackMessages.incorrectYou(participantName),
+    feedbackMessages.incorrectNoYou,
+  ])}
           </div>
           ${feedbackAnswer(jsPsych)}
         `;
