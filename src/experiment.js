@@ -112,13 +112,36 @@ export async function run({assetPaths, input = {}, environment, title, version})
   ])}
           </div>
           ${feedbackAnswer(jsPsych)}
+          ${retryButton(jsPsych.data.dataProperties.hideRetryButton)}
         `;
+      }
+    },
+    on_load: () => {
+      const retryButton = document.getElementById('feedback-retry-button');
+      retryButton?.addEventListener('click', () => {
+        retryButton.insertAdjacentHTML('afterend', retryHiddenInput());
+      });
+    },
+    on_finish: (data) => {
+      if (!!data.response.retry) {
+        jsPsych.data.addProperties({hideRetryButton: true});
+      } else {
+        jsPsych.data.addProperties({hideRetryButton: false});
       }
     },
   };
 
-  const testProcedure = {
+  const singleTestFeedback = {
     timeline: [test, feedback],
+    loop_function: (data) => {
+      const [testData, feedbackData] = data.values();
+      const retryPressed = !!feedbackData.response.retry;
+      return !testData.isCorrect && retryPressed;
+    },
+  };
+
+  const testProcedure = {
+    timeline: [singleTestFeedback],
     timeline_variables: testStimuli,
   };
   timeline.push(testProcedure);
@@ -158,4 +181,23 @@ function feedbackAnswer(jsPsych) {
       <p class="correct-equation">${correctEquation}</p>
     </div>
   `;
+}
+
+function retryButton(hide) {
+  if (hide) {
+    return '';
+  }
+
+  return `
+    <input
+      type="submit"
+      id="feedback-retry-button"
+      class="jspsych-btn jspsych-survey-html-form"
+      value="Retry"
+    />
+  `;
+}
+
+function retryHiddenInput() {
+  return `<input type="hidden" name="retry" value="true" />`;
 }
