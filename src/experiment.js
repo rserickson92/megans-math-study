@@ -21,6 +21,7 @@ import SurveyHtmlFormPlugin from '@jspsych/plugin-survey-html-form';
 import SurveyTextPlugin from '@jspsych/plugin-survey-text';
 
 import {testStimuli, feedbackMessages} from './test-data';
+import SurveyMultiSelectPlugin from '@jspsych/plugin-survey-multi-select';
 
 /**
  * This function will be executed by jsPsych Builder and is expected to run the jsPsych experiment
@@ -50,6 +51,28 @@ export async function run({assetPaths, input = {}, environment, title, version})
   timeline.push({
     type: FullscreenPlugin,
     fullscreen_mode: true,
+  });
+
+  // Configuration page
+  timeline.push({
+    type: SurveyMultiSelectPlugin,
+    questions: [{
+      prompt: '',
+      options: ['Person', 'Verify', 'Question'],
+      required: false,
+      name: 'options',
+    }],
+    button_label: '→',
+    data: {
+      task: 'config',
+    },
+    on_load: () => {
+      document.querySelectorAll('input[type="checkbox"]').forEach((cb) => cb.click());
+    },
+    on_finish: (data) => {
+      const options = Object.fromEntries(data.response.options.map((o) => [o.toLowerCase(), true]));
+      jsPsych.data.addProperties(options);
+    },
   });
 
   // Get participant name
@@ -90,27 +113,14 @@ export async function run({assetPaths, input = {}, environment, title, version})
       task: 'feedback',
     },
     on_start: (trial) => {
-      const participantName = jsPsych.data.dataProperties.participantName;
       if (prevTrialData(jsPsych).isCorrect) {
         trial.html = `
-          <div class="feedback-images">
-            <img src="assets/correct.png" />
-            ${randomizedFeedbackMessage(jsPsych, [
-    feedbackMessages.correctYou(participantName),
-    feedbackMessages.correctNoYou,
-  ])}
-          </div>
+          ${feedbackImages(jsPsych, true)}
           ${feedbackAnswer(jsPsych)}
         `;
       } else {
         trial.html = `
-          <div class="feedback-images">
-            <img src="assets/incorrect.png" />
-            ${randomizedFeedbackMessage(jsPsych, [
-    feedbackMessages.incorrectYou(participantName),
-    feedbackMessages.incorrectNoYou,
-  ])}
-          </div>
+          ${feedbackImages(jsPsych, false)}
           ${feedbackAnswer(jsPsych)}
           ${retryButton(jsPsych.data.dataProperties.hideRetryButton)}
         `;
@@ -157,6 +167,7 @@ function prevTrialData(jsPsych) {
   return jsPsych.data.get().last().values()[0];
 }
 
+// Unused, but leaving in incase needed later
 function randomizedFeedbackMessage(jsPsych, choices) {
   const message = jsPsych.randomization.sampleWithoutReplacement(choices, 1);
 
@@ -165,6 +176,44 @@ function randomizedFeedbackMessage(jsPsych, choices) {
   return `
     <div class="feedback-message" style="background-image: url('assets/ribbon.png')">
       <p>${message}</p>
+    </div>
+  `;
+}
+
+function personalizedFeedbackMessage(jsPsych, correct) {
+  const {person, participantName} = jsPsych.data.dataProperties;
+  const correctMessage = person ? feedbackMessages.correctYou(participantName) : feedbackMessages.correctNoYou;
+  const incorrectMessage = person ? feedbackMessages.incorrectYou(participantName) : feedbackMessages.incorrectNoYou;
+
+  // Workaround: inline style is needed here, presumably because
+  // assets are not available yet during CSS compilation
+  return `
+    <div class="feedback-message" style="background-image: url('assets/ribbon.png')">
+      <p>${correct ? correctMessage : incorrectMessage}</p>
+    </div>
+  `;
+}
+
+function feedbackImages(jsPsych, correct) {
+  const verify = jsPsych.data.dataProperties.verify;
+  const imageFilename = correct ? 'correct.png' : 'incorrect.png';
+
+  let images;
+  if (verify) {
+    images = `
+      <img src="assets/${imageFilename}" />
+      ${personalizedFeedbackMessage(jsPsych, correct)}
+    `;
+  } else {
+    images = `
+      ${personalizedFeedbackMessage(jsPsych, correct)}
+      <img src="assets/${imageFilename}" />
+    `;
+  }
+
+  return `
+    <div class="feedback-images">
+      ${images}
     </div>
   `;
 }
