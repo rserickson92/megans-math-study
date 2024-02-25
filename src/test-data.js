@@ -42,10 +42,10 @@ function formatCorrectResponse(answer) {
 }
 
 const feedbackMessages = {
-  correctYou: (name) => `Good job ${name}! YOU got it right!`,
-  correctNoYou: 'Good job! That\'s right!',
-  incorrectYou: (name) => `Uh oh ${name}! YOU got it wrong!`,
-  incorrectNoYou: 'Uh oh! That\'s wrong!',
+  correctYou: (name) => [`Good job ${name}!`, 'YOU got it right!'],
+  correctNoYou: ['Good job! That\'s right!'],
+  incorrectYou: (name) => [`Uh oh ${name}!`, 'YOU got it wrong!'],
+  incorrectNoYou: ['Uh oh! That\'s wrong!'],
 };
 
 export {testStimuli, feedbackMessages};

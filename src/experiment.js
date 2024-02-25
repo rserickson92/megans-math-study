@@ -184,12 +184,14 @@ function personalizedFeedbackMessage(jsPsych, correct) {
   const {person, participantName} = jsPsych.data.dataProperties;
   const correctMessage = person ? feedbackMessages.correctYou(participantName) : feedbackMessages.correctNoYou;
   const incorrectMessage = person ? feedbackMessages.incorrectYou(participantName) : feedbackMessages.incorrectNoYou;
+  const displayMessage = correct ? correctMessage : incorrectMessage;
+  const correctClass = correct ? 'correct' : 'incorrect';
 
   // Workaround: inline style is needed here, presumably because
   // assets are not available yet during CSS compilation
   return `
-    <div class="feedback-message" style="background-image: url('assets/ribbon.png')">
-      <p>${correct ? correctMessage : incorrectMessage}</p>
+    <div class="feedback-message ${correctClass}" style="background-image: url('assets/ribbon.png')">
+      ${displayMessage.map((line) => `<p>${line}</p>`).join('')}
     </div>
   `;
 }
