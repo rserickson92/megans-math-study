@@ -218,10 +218,10 @@ function feedbackImages(jsPsych) {
 }
 
 function feedbackAnswer(jsPsych) {
-  const {answer} = prevTrialData(jsPsych);
+  const {isCorrect, answer} = prevTrialData(jsPsych);
   const displayEquation = jsPsych.timelineVariable('displayEquation');
   const correctResponse = jsPsych.timelineVariable('correctResponse');
-  const noRetries = jsPsych.data.dataProperties.hideRetryButton;
+  const noRetries = isCorrect || jsPsych.data.dataProperties.hideRetryButton;
 
   const correctAnswerMessage = `
     <strong>
