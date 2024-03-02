@@ -109,27 +109,20 @@ export async function run({assetPaths, input = {}, environment, title, version})
 
   const feedback = {
     type: SurveyHtmlFormPlugin,
+    button_label: 'Next Question',
     css_classes: ['study-feedback'],
     data: {
       task: 'feedback',
     },
     on_start: (trial) => {
-      const {answer, isCorrect} = prevTrialData(jsPsych);
-      if (isCorrect) {
-        trial.html = `
-          ${feedbackImages(jsPsych, true)}
-          ${feedbackAnswer(jsPsych, answer, true)}
-        `;
-      } else {
-        const hideRetryButton = jsPsych.data.dataProperties.hideRetryButton;
-        trial.html = `
-          ${feedbackImages(jsPsych, false)}
-          ${feedbackAnswer(jsPsych, answer, hideRetryButton)}
-          ${retryButton(hideRetryButton)}
-        `;
-      }
+      trial.html = `
+        ${feedbackImages(jsPsych)}
+        ${feedbackButtonsContainer(jsPsych)}
+        ${feedbackAnswer(jsPsych)}
+      `;
     },
     on_load: () => {
+      centerNextButton();
       const retryButton = document.getElementById('feedback-retry-button');
       retryButton?.addEventListener('click', () => {
         retryButton.insertAdjacentHTML('afterend', retryHiddenInput());
@@ -199,19 +192,20 @@ function personalizedFeedbackMessage(jsPsych, correct) {
   `;
 }
 
-function feedbackImages(jsPsych, correct) {
+function feedbackImages(jsPsych) {
+  const {isCorrect} = prevTrialData(jsPsych);
   const verify = jsPsych.data.dataProperties.verify;
-  const imageFilename = correct ? 'correct.png' : 'incorrect.png';
+  const imageFilename = isCorrect ? 'correct.png' : 'incorrect.png';
 
   let images;
   if (verify) {
     images = `
       <img src="assets/${imageFilename}" />
-      ${personalizedFeedbackMessage(jsPsych, correct)}
+      ${personalizedFeedbackMessage(jsPsych, isCorrect)}
     `;
   } else {
     images = `
-      ${personalizedFeedbackMessage(jsPsych, correct)}
+      ${personalizedFeedbackMessage(jsPsych, isCorrect)}
       <img src="assets/${imageFilename}" />
     `;
   }
@@ -223,9 +217,11 @@ function feedbackImages(jsPsych, correct) {
   `;
 }
 
-function feedbackAnswer(jsPsych, answer, noRetries) {
+function feedbackAnswer(jsPsych) {
+  const {answer} = prevTrialData(jsPsych);
   const displayEquation = jsPsych.timelineVariable('displayEquation');
   const correctResponse = jsPsych.timelineVariable('correctResponse');
+  const noRetries = jsPsych.data.dataProperties.hideRetryButton;
 
   const correctAnswerMessage = `
     <strong>
@@ -244,6 +240,23 @@ function feedbackAnswer(jsPsych, answer, noRetries) {
   `;
 }
 
+function feedbackButtonsContainer(jsPsych) {
+  const {isCorrect} = prevTrialData(jsPsych);
+  const hideRetryButton = jsPsych.data.dataProperties.hideRetryButton;
+  return `
+    <div id="feedback-buttons">
+      ${isCorrect ? '' : retryButton(hideRetryButton)}
+    </div>
+  `;
+}
+
+function centerNextButton() {
+  const nextButton = document.getElementById('jspsych-survey-html-form-next');
+  const feedbackButtonsContainer = document.getElementById('feedback-buttons');
+
+  feedbackButtonsContainer.insertAdjacentElement('beforeend', nextButton);
+}
+
 function retryButton(hide) {
   if (hide) {
     return '';
@@ -254,7 +267,7 @@ function retryButton(hide) {
       type="submit"
       id="feedback-retry-button"
       class="jspsych-btn jspsych-survey-html-form"
-      value="Retry"
+      value="Try Again"
     />
   `;
 }
