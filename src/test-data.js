@@ -27,18 +27,25 @@ const testStimuli = [
   },
 ];
 testStimuli.forEach((stimuli) => {
-  stimuli.correctEquation = stimuli.equation.replace(
-      answerBox,
-      formatCorrectResponse(stimuli.correctResponse),
-  );
+  stimuli.displayEquation = (inputAnswer, isCorrect) =>
+    stimuli.equation.replace(
+        answerBox,
+        formatResponse(inputAnswer, isCorrect),
+    );
 });
 
+// eslint-disable-next-line require-jsdoc
 function equationSegment(text) {
   return `<span>${text}</span>`;
 }
 
-function formatCorrectResponse(answer) {
-  return `<span class="correct-response">${answer}</span>`;
+// eslint-disable-next-line require-jsdoc
+function formatResponse(value, isCorrect) {
+  if (isCorrect) {
+    return `<span class="correct-response">${value}</span>`;
+  } else {
+    return value;
+  }
 }
 
 const feedbackMessages = {

@@ -102,6 +102,7 @@ export async function run({assetPaths, input = {}, environment, title, version})
       correctResponse: jsPsych.timelineVariable('correctResponse'),
     },
     on_finish: (data) => {
+      data.answer = data.response.answer;
       data.isCorrect = parseInt(data.response.answer) === data.correctResponse;
     },
   };
@@ -113,16 +114,18 @@ export async function run({assetPaths, input = {}, environment, title, version})
       task: 'feedback',
     },
     on_start: (trial) => {
-      if (prevTrialData(jsPsych).isCorrect) {
+      const {answer, isCorrect} = prevTrialData(jsPsych);
+      if (isCorrect) {
         trial.html = `
           ${feedbackImages(jsPsych, true)}
-          ${feedbackAnswer(jsPsych)}
+          ${feedbackAnswer(jsPsych, answer, true)}
         `;
       } else {
+        const hideRetryButton = jsPsych.data.dataProperties.hideRetryButton;
         trial.html = `
           ${feedbackImages(jsPsych, false)}
-          ${feedbackAnswer(jsPsych)}
-          ${retryButton(jsPsych.data.dataProperties.hideRetryButton)}
+          ${feedbackAnswer(jsPsych, answer, hideRetryButton)}
+          ${retryButton(hideRetryButton)}
         `;
       }
     },
@@ -220,16 +223,23 @@ function feedbackImages(jsPsych, correct) {
   `;
 }
 
-function feedbackAnswer(jsPsych) {
-  const correctEquation = jsPsych.timelineVariable('correctEquation');
+function feedbackAnswer(jsPsych, answer, noRetries) {
+  const displayEquation = jsPsych.timelineVariable('displayEquation');
   const correctResponse = jsPsych.timelineVariable('correctResponse');
+
+  const correctAnswerMessage = `
+    <strong>
+      The correct answer is
+      <span class="correct-response">${correctResponse}</span>
+    </strong>
+  `;
+
   return `
     <div class="feedback-answer">
-      <strong>
-        The correct answer is
-        <span class="correct-response">${correctResponse}</span>
-      </strong>
-      <p class="correct-equation">${correctEquation}</p>
+      ${noRetries ? correctAnswerMessage : ''}
+      <p class="correct-equation">
+        ${noRetries ? displayEquation(correctResponse, true) : displayEquation(answer, false)}
+      </p>
     </div>
   `;
 }
