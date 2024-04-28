@@ -242,7 +242,7 @@ function feedbackAnswer(jsPsych) {
 
   const correctAnswerMessage = `
     <strong>
-      The correct answer is
+      The answer is
       <span class="correct-response">${correctResponse}</span>
     </strong>
   `;
