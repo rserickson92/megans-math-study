@@ -163,56 +163,52 @@ function prevTrialData(jsPsych) {
   return jsPsych.data.get().last().values()[0];
 }
 
-// Unused, but leaving in incase needed later
-function randomizedFeedbackMessage(jsPsych, choices) {
-  const message = jsPsych.randomization.sampleWithoutReplacement(choices, 1);
+function feedbackBanner(jsPsych, correct) {
+  const {person, verify, participantName} = jsPsych.data.dataProperties;
+  const correctMessage = person ? feedbackMessages.correctYou(participantName) : feedbackMessages.correctNoYou;
+  const incorrectMessage = person ? feedbackMessages.incorrectYou(participantName) : feedbackMessages.incorrectNoYou;
+  const neutralMessage = person ? feedbackMessages.neutralYou(participantName) : feedbackMessages.neutralNoYou;
+
+  let bannerFilename;
+  let displayMessage;
+  if (verify) {
+    bannerFilename = correct ? 'green-ribbon.png' : 'red-ribbon.png';
+    displayMessage = correct ? correctMessage : incorrectMessage;
+  } else {
+    bannerFilename = 'blue-ribbon.png';
+    displayMessage = neutralMessage;
+  }
 
   // Workaround: inline style is needed here, presumably because
   // assets are not available yet during CSS compilation
   return `
-    <div class="feedback-message" style="background-image: url('assets/ribbon.png')">
-      <p>${message}</p>
+    <div class="feedback-message" style="background-image: url('assets/${bannerFilename}')">
+      ${displayMessage.map((line) => `<p>${line}</p>`).join('')}
+      ${feedbackIcon(jsPsych, correct)}
     </div>
   `;
 }
 
-function personalizedFeedbackMessage(jsPsych, correct) {
-  const {person, participantName} = jsPsych.data.dataProperties;
-  const correctMessage = person ? feedbackMessages.correctYou(participantName) : feedbackMessages.correctNoYou;
-  const incorrectMessage = person ? feedbackMessages.incorrectYou(participantName) : feedbackMessages.incorrectNoYou;
-  const displayMessage = correct ? correctMessage : incorrectMessage;
-  const correctClass = correct ? 'correct' : 'incorrect';
+function feedbackIcon(jsPsych, correct) {
+  const {verify} = jsPsych.data.dataProperties;
+  if (!verify) {
+    return '';
+  }
 
-  // Workaround: inline style is needed here, presumably because
-  // assets are not available yet during CSS compilation
+  const iconFilename = correct ? 'correct.png' : 'incorrect.png';
   return `
-    <div class="feedback-message ${correctClass}" style="background-image: url('assets/ribbon.png')">
-      ${displayMessage.map((line) => `<p>${line}</p>`).join('')}
+    <div class="feedback-icon-container">
+      <img class="feedback-icon" src="assets/${iconFilename}" />
     </div>
   `;
 }
 
 function feedbackImages(jsPsych) {
   const {isCorrect} = prevTrialData(jsPsych);
-  const verify = jsPsych.data.dataProperties.verify;
-  const imageFilename = isCorrect ? 'correct.png' : 'incorrect.png';
-
-  let images;
-  if (verify) {
-    images = `
-      <img src="assets/${imageFilename}" />
-      ${personalizedFeedbackMessage(jsPsych, isCorrect)}
-    `;
-  } else {
-    images = `
-      ${personalizedFeedbackMessage(jsPsych, isCorrect)}
-      <img src="assets/${imageFilename}" />
-    `;
-  }
 
   return `
     <div class="feedback-images">
-      ${images}
+      ${feedbackBanner(jsPsych, isCorrect)}
     </div>
   `;
 }

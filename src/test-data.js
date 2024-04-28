@@ -53,6 +53,8 @@ const feedbackMessages = {
   correctNoYou: ['Good job! That\'s right!'],
   incorrectYou: (name) => [`Uh oh ${name}!`, 'YOU got it wrong!'],
   incorrectNoYou: ['Uh oh! That\'s wrong!'],
+  neutralYou: (name) => [`${name}! YOU`, 'submitted an answer!'],
+  neutralNoYou: ['An answer was', 'submitted.'],
 };
 
 export {testStimuli, feedbackMessages};
