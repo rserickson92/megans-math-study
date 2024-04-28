@@ -123,26 +123,43 @@ export async function run({assetPaths, input = {}, environment, title, version})
     },
     on_load: () => {
       centerNextButton();
-      const retryButton = document.getElementById('feedback-retry-button');
-      retryButton?.addEventListener('click', () => {
-        retryButton.insertAdjacentHTML('afterend', retryHiddenInput());
-      });
+      configureRetryButton();
     },
     on_finish: (data) => {
-      if (!!data.response.retry) {
-        jsPsych.data.addProperties({hideRetryButton: true});
-      } else {
-        jsPsych.data.addProperties({hideRetryButton: false});
+      jsPsych.data.addProperties({hideRetryButton: true});
+    },
+  };
+
+  const feedbackNode = {
+    timeline: [feedback],
+    loop_function: (data) => {
+      const testData = prevTestData(jsPsych);
+      if (testData.isCorrect) {
+        return false;
       }
+
+      const [feedbackData] = data.values();
+      const {alreadyCorrected} = jsPsych.data.dataProperties;
+      if (!feedbackData.response.retry && !alreadyCorrected) {
+        jsPsych.data.addProperties({alreadyCorrected: true});
+        return true;
+      }
+
+      return false;
     },
   };
 
   const singleTestFeedback = {
-    timeline: [test, feedback],
+    timeline: [test, feedbackNode],
     loop_function: (data) => {
       const [testData, feedbackData] = data.values();
       const retryPressed = !!feedbackData.response.retry;
-      return !testData.isCorrect && retryPressed;
+      if (!testData.isCorrect && retryPressed) {
+        return true;
+      }
+
+      jsPsych.data.addProperties({hideRetryButton: false, alreadyCorrected: false});
+      return false;
     },
   };
 
@@ -161,6 +178,10 @@ export async function run({assetPaths, input = {}, environment, title, version})
 
 function prevTrialData(jsPsych) {
   return jsPsych.data.get().last().values()[0];
+}
+
+function prevTestData(jsPsych) {
+  return jsPsych.data.get().trials.findLast((t) => t.task === 'test');
 }
 
 function feedbackBanner(jsPsych, correct) {
@@ -204,7 +225,7 @@ function feedbackIcon(jsPsych, correct) {
 }
 
 function feedbackImages(jsPsych) {
-  const {isCorrect} = prevTrialData(jsPsych);
+  const {isCorrect} = prevTestData(jsPsych);
 
   return `
     <div class="feedback-images">
@@ -214,7 +235,7 @@ function feedbackImages(jsPsych) {
 }
 
 function feedbackAnswer(jsPsych) {
-  const {isCorrect, answer} = prevTrialData(jsPsych);
+  const {isCorrect, answer} = prevTestData(jsPsych);
   const displayEquation = jsPsych.timelineVariable('displayEquation');
   const correctResponse = jsPsych.timelineVariable('correctResponse');
   const noRetries = isCorrect || jsPsych.data.dataProperties.hideRetryButton;
@@ -237,7 +258,7 @@ function feedbackAnswer(jsPsych) {
 }
 
 function feedbackButtonsContainer(jsPsych) {
-  const {isCorrect} = prevTrialData(jsPsych);
+  const {isCorrect} = prevTestData(jsPsych);
   const hideRetryButton = jsPsych.data.dataProperties.hideRetryButton;
   return `
     <div id="feedback-buttons">
@@ -251,6 +272,13 @@ function centerNextButton() {
   const feedbackButtonsContainer = document.getElementById('feedback-buttons');
 
   feedbackButtonsContainer.insertAdjacentElement('beforeend', nextButton);
+}
+
+function configureRetryButton() {
+  const retryButton = document.getElementById('feedback-retry-button');
+  retryButton?.addEventListener('click', () => {
+    retryButton.insertAdjacentHTML('afterend', retryHiddenInput());
+  });
 }
 
 function retryButton(hide) {
