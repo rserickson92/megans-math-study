@@ -109,7 +109,12 @@ export async function run({assetPaths, input = {}, environment, title, version})
 
   const feedback = {
     type: SurveyHtmlFormPlugin,
-    button_label: 'Next Question',
+    button_label: () => {
+      const {isCorrect} = prevData(jsPsych, 'test');
+      const {hideRetryButton} = jsPsych.data.dataProperties;
+      const isRetry = !isCorrect && !hideRetryButton;
+      return isRetry ? 'See Answer' : 'Next Question';
+    },
     css_classes: ['study-feedback'],
     data: {
       task: 'feedback',
@@ -133,7 +138,7 @@ export async function run({assetPaths, input = {}, environment, title, version})
   const feedbackNode = {
     timeline: [feedback],
     loop_function: (data) => {
-      const testData = prevTestData(jsPsych);
+      const testData = prevData(jsPsych, 'test');
       if (testData.isCorrect) {
         return false;
       }
@@ -176,12 +181,8 @@ export async function run({assetPaths, input = {}, environment, title, version})
   return jsPsych;
 }
 
-function prevTrialData(jsPsych) {
-  return jsPsych.data.get().last().values()[0];
-}
-
-function prevTestData(jsPsych) {
-  return jsPsych.data.get().trials.findLast((t) => t.task === 'test');
+function prevData(jsPsych, task) {
+  return jsPsych.data.get().trials.findLast((t) => t.task === task);
 }
 
 function feedbackBanner(jsPsych, correct) {
@@ -225,7 +226,7 @@ function feedbackIcon(jsPsych, correct) {
 }
 
 function feedbackImages(jsPsych) {
-  const {isCorrect} = prevTestData(jsPsych);
+  const {isCorrect} = prevData(jsPsych, 'test');
 
   return `
     <div class="feedback-images">
@@ -235,10 +236,10 @@ function feedbackImages(jsPsych) {
 }
 
 function feedbackAnswer(jsPsych) {
-  const {isCorrect, answer} = prevTestData(jsPsych);
+  const {isCorrect, answer} = prevData(jsPsych, 'test');
   const displayEquation = jsPsych.timelineVariable('displayEquation');
   const correctResponse = jsPsych.timelineVariable('correctResponse');
-  const noRetries = isCorrect || jsPsych.data.dataProperties.hideRetryButton;
+  const showCorrection = isCorrect || jsPsych.data.dataProperties.hideRetryButton;
 
   const correctAnswerMessage = `
     <strong>
@@ -249,16 +250,16 @@ function feedbackAnswer(jsPsych) {
 
   return `
     <div class="feedback-answer">
-      ${noRetries ? correctAnswerMessage : ''}
+      ${showCorrection ? correctAnswerMessage : ''}
       <p class="correct-equation">
-        ${noRetries ? displayEquation(correctResponse, true) : displayEquation(answer, false)}
+        ${showCorrection ? displayEquation(correctResponse, true) : displayEquation(answer, false)}
       </p>
     </div>
   `;
 }
 
 function feedbackButtonsContainer(jsPsych) {
-  const {isCorrect} = prevTestData(jsPsych);
+  const {isCorrect} = prevData(jsPsych, 'test');
   const hideRetryButton = jsPsych.data.dataProperties.hideRetryButton;
   return `
     <div id="feedback-buttons">

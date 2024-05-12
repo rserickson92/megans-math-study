@@ -41,11 +41,11 @@ function equationSegment(text) {
 
 // eslint-disable-next-line require-jsdoc
 function formatResponse(value, isCorrect) {
-  if (isCorrect) {
-    return `<span class="correct-response">${value}</span>`;
-  } else {
-    return value;
-  }
+  return `
+    <span class="user-response ${isCorrect ? 'correct-response' : ''}">
+      ${value}
+    </span>
+  `;
 }
 
 const feedbackMessages = {
@@ -54,7 +54,7 @@ const feedbackMessages = {
   incorrectYou: (name) => [`Uh oh ${name}!`, 'YOU got it wrong!'],
   incorrectNoYou: ['Uh oh! That\'s wrong!'],
   neutralYou: (name) => [`${name}! YOU`, 'submitted an answer!'],
-  neutralNoYou: ['An answer was', 'submitted.'],
+  neutralNoYou: ['An answer was', 'submitted!'],
 };
 
 export {testStimuli, feedbackMessages};
