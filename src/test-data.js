@@ -42,7 +42,7 @@ function equationSegment(text) {
 // eslint-disable-next-line require-jsdoc
 function formatResponse(value, isCorrect) {
   return `
-    <span class="user-response ${isCorrect ? 'correct-response' : ''}">
+    <span class="${isCorrect ? 'correct-response' : 'user-response'}">
       ${value}
     </span>
   `;
