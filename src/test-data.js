@@ -1,10 +1,21 @@
-const answerBox = '<input id="problem-answer-box" name="answer" type="text" />';
+const answerBox = (value = null, isCorrect = false) => {
+  return `
+    <input
+      id="problem-answer-box"
+      name="answer"
+      type="text"
+      ${value && isCorrect ? 'class="correct-response"' : ''}
+      ${value ? `value=${value}` : ''}
+      ${value ? 'disabled' : ''}
+    />
+  `;
+};
 
 const testStimuli = [
   {
     equation: `
       ${equationSegment('3 + ')}
-      ${answerBox}
+      ${answerBox()}
       ${equationSegment('= 10')}
     `,
     correctResponse: 7,
@@ -12,7 +23,7 @@ const testStimuli = [
   {
     equation: `
       ${equationSegment('2 + ')}
-      ${answerBox}
+      ${answerBox()}
       ${equationSegment('= 4')}
     `,
     correctResponse: 2,
@@ -20,7 +31,7 @@ const testStimuli = [
   {
     equation: `
       ${equationSegment('12 - ')}
-      ${answerBox}
+      ${answerBox()}
       ${equationSegment('= 10')}
     `,
     correctResponse: 2,
@@ -29,23 +40,14 @@ const testStimuli = [
 testStimuli.forEach((stimuli) => {
   stimuli.displayEquation = (inputAnswer, isCorrect) =>
     stimuli.equation.replace(
-        answerBox,
-        formatResponse(inputAnswer, isCorrect),
+        answerBox(),
+        answerBox(inputAnswer, isCorrect),
     );
 });
 
 // eslint-disable-next-line require-jsdoc
 function equationSegment(text) {
   return `<span>${text}</span>`;
-}
-
-// eslint-disable-next-line require-jsdoc
-function formatResponse(value, isCorrect) {
-  return `
-    <span class="${isCorrect ? 'correct-response' : 'user-response'}">
-      ${value}
-    </span>
-  `;
 }
 
 const feedbackMessages = {

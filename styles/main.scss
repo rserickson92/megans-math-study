@@ -11,10 +11,12 @@
 #problem-answer-box {
   font-size: 100px;
   width: 15%;
-}
+  text-align: center;
 
-.user-response {
-  color: gray;
+  &[disabled] {
+    background-color: white;
+    border: 1px solid black;
+  }
 }
 
 .correct-response {
