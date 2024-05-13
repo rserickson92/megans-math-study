@@ -16,27 +16,63 @@ const testStimuli = [
     equation: `
       ${equationSegment('3 + ')}
       ${answerBox()}
-      ${equationSegment('= 10')}
+      ${equationSegment(' = 10')}
     `,
     correctResponse: 7,
   },
   {
     equation: `
-      ${equationSegment('2 + ')}
+      ${equationSegment('5 + 6 + 4 = 4 + ')}
       ${answerBox()}
-      ${equationSegment('= 4')}
     `,
-    correctResponse: 2,
+    correctResponse: 11,
   },
   {
     equation: `
-      ${equationSegment('12 - ')}
+      ${equationSegment('3 + 7 = 3 + ')}
       ${answerBox()}
-      ${equationSegment('= 10')}
     `,
-    correctResponse: 2,
+    correctResponse: 7,
+  },
+  {
+    equation: `
+      ${equationSegment('9 + 6 = ')}
+      ${answerBox()}
+      ${equationSegment(' + 5')}
+    `,
+    correctResponse: 10,
+  },
+  {
+    equation: `
+      ${equationSegment('8 = 5 + ')}
+      ${answerBox()}
+    `,
+    correctResponse: 3,
+  },
+  {
+    equation: `
+      ${equationSegment('6 + 2 + 3 = ')}
+      ${answerBox()}
+      ${equationSegment(' + 8')}
+    `,
+    correctResponse: 3,
+  },
+  {
+    equation: `
+      ${equationSegment('3 + 5 = 4 + ')}
+      ${answerBox()}
+    `,
+    correctResponse: 4,
+  },
+  {
+    equation: `
+      ${equationSegment('4 + 7 = 4 + ')}
+      ${answerBox()}
+    `,
+    correctResponse: 7,
   },
 ];
+
 testStimuli.forEach((stimuli) => {
   stimuli.displayEquation = (inputAnswer, isCorrect) =>
     stimuli.equation.replace(
