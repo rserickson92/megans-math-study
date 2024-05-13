@@ -50,12 +50,14 @@ function equationSegment(text) {
   return `<span>${text}</span>`;
 }
 
+// Note: line wrapping could be better by splitting up dynamically
+// based on long names. But not required for now
 const feedbackMessages = {
   correctYou: (name) => [`Good job ${name}!`, 'YOU got it right!'],
   correctNoYou: ['Good job! That\'s right!'],
   incorrectYou: (name) => [`Uh oh ${name}!`, 'YOU got it wrong!'],
   incorrectNoYou: ['Uh oh! That\'s wrong!'],
-  neutralYou: (name) => [`${name}! YOU`, 'submitted an answer!'],
+  neutralYou: (name) => [`${name}! YOU`, 'submitted', 'an answer!'],
   neutralNoYou: ['An answer was', 'submitted!'],
 };
 

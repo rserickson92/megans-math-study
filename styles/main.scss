@@ -58,6 +58,10 @@
       justify-content: center;
       width: 100%;
       height: 33%;
+
+      strong {
+        font-size: 25px;
+      }
     }
 
     .feedback-message {
@@ -68,6 +72,7 @@
       background-position: center;
       background-size: contain;
       width: 50%;
+      font-size: 25px;
       font-weight: bold;
 
       p {
