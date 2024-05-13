@@ -1,7 +1,7 @@
 /**
  * @title Megan's math study
  * @description Megan's math study
- * @version 0.5.0
+ * @version 1.0.0
  *
  * @assets assets/
  */
