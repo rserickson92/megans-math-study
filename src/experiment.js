@@ -21,6 +21,7 @@ import SurveyHtmlFormPlugin from '@jspsych/plugin-survey-html-form';
 import SurveyTextPlugin from '@jspsych/plugin-survey-text';
 
 import {testStimuli, feedbackMessages} from './test-data';
+import {QUESTION_SET} from './config';
 import SurveyMultiSelectPlugin from '@jspsych/plugin-survey-multi-select';
 
 /**
@@ -58,7 +59,7 @@ export async function run({assetPaths, input = {}, environment, title, version})
     type: SurveyMultiSelectPlugin,
     questions: [{
       prompt: '',
-      options: ['Person', 'Verify', 'Question'],
+      options: ['Person', 'Verify'],
       required: false,
       name: 'options',
     }],
@@ -71,7 +72,7 @@ export async function run({assetPaths, input = {}, environment, title, version})
     },
     on_finish: (data) => {
       const options = Object.fromEntries(data.response.options.map((o) => [o.toLowerCase(), true]));
-      jsPsych.data.addProperties(options);
+      jsPsych.data.addProperties({studyConfig: options});
     },
   });
 
@@ -170,7 +171,7 @@ export async function run({assetPaths, input = {}, environment, title, version})
 
   const testProcedure = {
     timeline: [singleTestFeedback],
-    timeline_variables: testStimuli,
+    timeline_variables: testStimuli[QUESTION_SET],
   };
   timeline.push(testProcedure);
 
@@ -186,7 +187,7 @@ function prevData(jsPsych, task) {
 }
 
 function feedbackBanner(jsPsych, correct) {
-  const {person, verify, participantName} = jsPsych.data.dataProperties;
+  const {studyConfig: {person, verify}, participantName} = jsPsych.data.dataProperties;
   const correctMessage = person ? feedbackMessages.correctYou(participantName) : feedbackMessages.correctNoYou;
   const incorrectMessage = person ? feedbackMessages.incorrectYou(participantName) : feedbackMessages.incorrectNoYou;
   const neutralMessage = person ? feedbackMessages.neutralYou(participantName) : feedbackMessages.neutralNoYou;
@@ -212,7 +213,7 @@ function feedbackBanner(jsPsych, correct) {
 }
 
 function feedbackIcon(jsPsych, correct) {
-  const {verify} = jsPsych.data.dataProperties;
+  const {verify} = jsPsych.data.dataProperties.studyConfig;
   if (!verify) {
     return '';
   }
