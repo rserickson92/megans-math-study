@@ -1,7 +1,7 @@
 /**
  * @title Megan's math study
  * @description Megan's math study
- * @version 1.0.0
+ * @version 1.1.0
  *
  * @assets assets/
  */
@@ -249,9 +249,16 @@ function feedbackAnswer(jsPsych) {
     </strong>
   `;
 
+  const incorrectAnswerMessage = `
+    <strong>
+      The answer is not
+      <span class="incorrect-response">${answer}</span>
+    </strong>
+  `;
+
   return `
     <div class="feedback-answer">
-      ${showCorrection ? correctAnswerMessage : ''}
+      ${showCorrection ? correctAnswerMessage : incorrectAnswerMessage}
       <p class="correct-equation">
         ${showCorrection ? displayEquation(correctResponse, true) : displayEquation(answer, false)}
       </p>
