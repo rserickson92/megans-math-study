@@ -1,7 +1,7 @@
 /**
  * @title Megan's math study
  * @description Megan's math study
- * @version 1.1.0
+ * @version 1.2.0
  *
  * @assets assets/
  */
@@ -88,6 +88,7 @@ export async function run({assetPaths, input = {}, environment, title, version})
     ],
     on_finish: (data) => {
       jsPsych.data.addProperties({participantName: data.response.participantName});
+      jsPsych.data.addProperties({feedbackStage: 'initial'});
     },
   });
 
@@ -112,9 +113,12 @@ export async function run({assetPaths, input = {}, environment, title, version})
     type: SurveyHtmlFormPlugin,
     button_label: () => {
       const {isCorrect} = prevData(jsPsych, 'test');
-      const {hideRetryButton} = jsPsych.data.dataProperties;
-      const isRetry = !isCorrect && !hideRetryButton;
-      return isRetry ? 'See Answer' : 'Next Question';
+      const {feedbackStage} = jsPsych.data.dataProperties;
+      if (!isCorrect && ['initial', 'retry'].includes(feedbackStage)) {
+        return 'See Answer';
+      } else {
+        return 'Next Question';
+      }
     },
     css_classes: ['study-feedback'],
     data: {
@@ -131,9 +135,6 @@ export async function run({assetPaths, input = {}, environment, title, version})
       centerNextButton();
       configureRetryButton();
     },
-    on_finish: (data) => {
-      jsPsych.data.addProperties({hideRetryButton: true});
-    },
   };
 
   const feedbackNode = {
@@ -141,30 +142,36 @@ export async function run({assetPaths, input = {}, environment, title, version})
     loop_function: (data) => {
       const testData = prevData(jsPsych, 'test');
       if (testData.isCorrect) {
+        jsPsych.data.addProperties({feedbackStage: 'success'});
         return false;
       }
 
       const [feedbackData] = data.values();
-      const {alreadyCorrected} = jsPsych.data.dataProperties;
-      if (!feedbackData.response.retry && !alreadyCorrected) {
-        jsPsych.data.addProperties({alreadyCorrected: true});
-        return true;
+      const retryPressed = !!feedbackData.response.retry;
+      if (retryPressed) {
+        jsPsych.data.addProperties({feedbackStage: 'retry'});
+        return false;
       }
 
-      return false;
+      const {feedbackStage} = jsPsych.data.dataProperties;
+      if (['success', 'failure'].includes(feedbackStage)) {
+        return false;
+      }
+
+      jsPsych.data.addProperties({feedbackStage: 'failure'});
+      return true;
     },
   };
 
   const singleTestFeedback = {
     timeline: [test, feedbackNode],
     loop_function: (data) => {
-      const [testData, feedbackData] = data.values();
-      const retryPressed = !!feedbackData.response.retry;
-      if (!testData.isCorrect && retryPressed) {
+      const {feedbackStage} = jsPsych.data.dataProperties;
+      if (feedbackStage === 'retry') {
         return true;
       }
 
-      jsPsych.data.addProperties({hideRetryButton: false, alreadyCorrected: false});
+      jsPsych.data.addProperties({feedbackStage: 'initial'});
       return false;
     },
   };
@@ -240,7 +247,8 @@ function feedbackAnswer(jsPsych) {
   const {isCorrect, answer} = prevData(jsPsych, 'test');
   const displayEquation = jsPsych.timelineVariable('displayEquation');
   const correctResponse = jsPsych.timelineVariable('correctResponse');
-  const showCorrection = isCorrect || jsPsych.data.dataProperties.hideRetryButton;
+  const {feedbackStage} = jsPsych.data.dataProperties;
+  const showCorrection = isCorrect || feedbackStage === 'failure';
 
   const correctAnswerMessage = `
     <strong>
@@ -268,10 +276,10 @@ function feedbackAnswer(jsPsych) {
 
 function feedbackButtonsContainer(jsPsych) {
   const {isCorrect} = prevData(jsPsych, 'test');
-  const hideRetryButton = jsPsych.data.dataProperties.hideRetryButton;
+  const hideRetryButton = isCorrect || ['retry', 'failure', 'end'].includes(jsPsych.data.dataProperties.feedbackStage);
   return `
     <div id="feedback-buttons">
-      ${isCorrect ? '' : retryButton(hideRetryButton)}
+      ${retryButton(hideRetryButton)}
     </div>
   `;
 }
